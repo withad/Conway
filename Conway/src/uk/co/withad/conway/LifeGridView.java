@@ -17,7 +17,7 @@ import static uk.co.withad.conway.Constants.*;
 
 public class LifeGridView extends View {
 	
-	private boolean[][] lifeGrid = null;
+	private int[][] lifeGrid = null;
 	private Random random = new Random();
 	
 	private Handler tickHandler = new Handler();
@@ -51,13 +51,19 @@ public class LifeGridView extends View {
 		cellPaint.setStyle(Style.FILL);
 		cellPaint.setColor(Color.BLACK);
 		
+		Paint fadePaint = new Paint();
+		fadePaint.setStyle(Style.FILL);
+		fadePaint.setColor(Color.GRAY);
+		
 		int gridWidth = lifeGrid.length;
 		int gridHeight = lifeGrid[0].length;
 		
 		for (int x = 0; x < gridWidth; x++) {
 			for (int y = 0; y < gridHeight; y++) {
-				if(lifeGrid[x][y])
+				if(lifeGrid[x][y] == ALIVE)
 					canvas.drawRect(x*cellSize, y*cellSize, x*cellSize + cellSize, y*cellSize + cellSize, cellPaint);
+				else if(lifeGrid[x][y] > 0)
+					canvas.drawRect(x*cellSize, y*cellSize, x*cellSize + cellSize, y*cellSize + cellSize, fadePaint);
 			}
 		}
 		
@@ -88,7 +94,7 @@ public class LifeGridView extends View {
 		
 		Log.d(TAG, "Width = " + gridWidth + ", Height = " + gridHeight);
 		
-		lifeGrid = new boolean[gridWidth][gridHeight];
+		lifeGrid = new int[gridWidth][gridHeight];
 		newGrid();
 	}
 	
@@ -125,18 +131,18 @@ public class LifeGridView extends View {
 				choice = random.nextInt(2);
 				
 				if (choice == 1)
-					lifeGrid[x][y] = true;
+					lifeGrid[x][y] = ALIVE;
 				else if (choice == 0)
-					lifeGrid[x][y] = false;
+					lifeGrid[x][y] = DEAD;
 			}
 		}
 	}
 	
 	
-	private void fillLifeGridShape() {
+	/*private void fillLifeGridShape() {
 		for (int x = 0; x < gridWidth; x++) {
 			for (int y = 0; y < gridHeight; y++) {
-					lifeGrid[x][y] = false;
+					lifeGrid[x][y] = 0;
 			}
 		}
 		
@@ -148,7 +154,7 @@ public class LifeGridView extends View {
 		lifeGrid[xstart][ystart + 1] = true;
 		lifeGrid[xstart][ystart + 2] = true;
 		lifeGrid[xstart][ystart + 3] = true;
-		lifeGrid[xstart][ystart + 4] = true;
+		lifeGrid[xstart][ystart + ] = true;
 		lifeGrid[xstart][ystart + 5] = true;
 		lifeGrid[xstart][ystart + 6] = true;
 		lifeGrid[xstart][ystart + 7] = true;
@@ -171,17 +177,17 @@ public class LifeGridView extends View {
 		lifeGrid[xstart][ystart + 31] = true;
 		lifeGrid[xstart][ystart + 32] = true;
 		
-		lifeGrid[xstart][ystart + 34] = true;
+		lifeGrid[xstart][ystart + 3] = true;
 		lifeGrid[xstart][ystart + 35] = true;
 		lifeGrid[xstart][ystart + 36] = true;
 		lifeGrid[xstart][ystart + 37] = true;
 		lifeGrid[xstart][ystart + 38] = true;
 		
-	}
+	}*/
 	
 	
 	private void updateLifeGrid() {		
-		boolean[][] newGrid = new boolean[gridWidth][gridHeight];
+		int[][] newGrid = new int[gridWidth][gridHeight];
 		
 		for (int x = 0; x < gridWidth; x++) {
 			for (int y = 0; y < gridHeight; y++) {
@@ -194,7 +200,7 @@ public class LifeGridView extends View {
 	}
 
 
-	private boolean updateCell(int x, int y) {
+	private int updateCell(int x, int y) {
 		
 		int leftColumn = x-1;
 		int rightColumn = x+1;
@@ -225,19 +231,7 @@ public class LifeGridView extends View {
 		
 		topRight = getCellValue(rightColumn,topRow);
 		right = getCellValue(rightColumn,y);
-		bottomRight = getCellValue(rightColumn,bottomRow);
-		
-		/*topLeft = lifeGrid[leftColumn][topRow];
-		left = lifeGrid[leftColumn][y];
-		bottomLeft = lifeGrid[leftColumn][bottomRow];
-		
-		top = lifeGrid[x][topRow];
-		bottom = lifeGrid[x][bottomRow];
-		
-		topRight = lifeGrid[rightColumn][topRow];
-		right = lifeGrid[rightColumn][y];
-		bottomRight = lifeGrid[rightColumn][bottomRow];*/
-		
+		bottomRight = getCellValue(rightColumn,bottomRow);		
 		
 		boolean[] neighbours = {topLeft, left, bottomLeft, top, bottom, topRight, right, bottomRight};
 		
@@ -246,30 +240,30 @@ public class LifeGridView extends View {
 			if(b) noOfNeighbours++;
 		}
 		
+		int currentLife = lifeGrid[x][y];
+		boolean currentlyAlive = (currentLife == ALIVE);
 		
-		boolean currentlyAlive = lifeGrid[x][y];
-		boolean aliveNow = false;
 		
 		if(currentlyAlive && (noOfNeighbours == 2 || noOfNeighbours == 3)) {
-			aliveNow = true;
+			currentLife = ALIVE;
 		}
 		else if(!currentlyAlive && noOfNeighbours == 3) {
-			aliveNow = true;
+			currentLife = ALIVE;
+		}
+		else if(currentLife != DEAD){
+			currentLife--;
 		}
 		
-		//Log.d(TAG, "Updating cell (" + x + "," + y + ") - " + "Currently " + (currentlyAlive ? "alive" : "dead") + 
-		//			", " + noOfNeighbours + " neighbours - " + (aliveNow ? "lives" : "dies"));
-		
-		return aliveNow;
+		return currentLife;
 	}
 
 	
 	private boolean getCellValue(int x, int y) {
 		
-		if(x < 0 || y < 0) 
+		/*if(x < 0 || y < 0) 
 			return false;
-		else 
-			return lifeGrid[x][y];
+		else */
+			return (lifeGrid[x][y] == ALIVE);
 	}
 
 

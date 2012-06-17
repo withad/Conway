@@ -1,18 +1,22 @@
 package uk.co.withad.conway;
 
+import static uk.co.withad.conway.Constants.ALIVE;
+import static uk.co.withad.conway.Constants.DEAD;
+import static uk.co.withad.conway.Constants.TAG;
+
 import java.util.Random;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Paint.Style;
 import android.os.Handler;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
-
-import static uk.co.withad.conway.Constants.*;
 
 
 public class LifeGridView extends View {
@@ -32,10 +36,35 @@ public class LifeGridView extends View {
 	private int gridWidth = 10;
 	private int gridHeight = 10;
 	
+	Matrix matrix = null;
+	
+	public Activity parentActivity;
+	public int actionBarHeight = -1;
+	
+	float scale = 1f;
+	
+	public float translateX = 0;
+	public float translateY = 0;
+	
+	Paint cellPaint;
+	Paint fadePaint;
+	Paint gridPaint;
+	
 	
 	// Constructor
 	public LifeGridView(Context context, AttributeSet atts) {
 		super(context, atts);
+		
+		cellPaint = new Paint();
+		cellPaint.setStyle(Style.FILL);
+		cellPaint.setColor(Color.BLACK);
+		
+		fadePaint = new Paint();
+		fadePaint.setStyle(Style.FILL);
+		fadePaint.setColor(Color.GRAY);
+		
+		gridPaint = new Paint();
+		gridPaint.setColor(Color.LTGRAY);
 		
 		setBackgroundColor(Color.WHITE);
 	}
@@ -43,34 +72,41 @@ public class LifeGridView extends View {
 	
 	@Override
 	public void onDraw(Canvas canvas) {
-		super.onDraw(canvas);
-		
-		if(lifeGrid == null) return;
-		
-		Paint cellPaint = new Paint();
-		cellPaint.setStyle(Style.FILL);
-		cellPaint.setColor(Color.BLACK);
-		
-		Paint fadePaint = new Paint();
-		fadePaint.setStyle(Style.FILL);
-		fadePaint.setColor(Color.GRAY);
-		
-		int gridWidth = lifeGrid.length;
-		int gridHeight = lifeGrid[0].length;
-		
-		for (int x = 0; x < gridWidth; x++) {
-			for (int y = 0; y < gridHeight; y++) {
-				if(lifeGrid[x][y] == ALIVE)
-					canvas.drawRect(x*cellSize, y*cellSize, x*cellSize + cellSize, y*cellSize + cellSize, cellPaint);
-				else if(lifeGrid[x][y] > 0)
-					canvas.drawRect(x*cellSize, y*cellSize, x*cellSize + cellSize, y*cellSize + cellSize, fadePaint);
-			}
+		if(matrix == null) matrix = canvas.getMatrix();
+		if (actionBarHeight == -1) {
+			actionBarHeight = parentActivity.getActionBar().getHeight();
+			matrix.reset();
+			matrix.postScale(scale, scale);
+			matrix.postTranslate(0, actionBarHeight);
 		}
 		
+		canvas.setMatrix(matrix);
 		
-		Paint gridPaint = new Paint();
-		gridPaint.setColor(Color.LTGRAY);
+		super.onDraw(canvas);
 		
+		matrix.postTranslate(translateX, translateY);
+		translateX = 0;
+		translateY = 0;
+		
+		if(lifeGrid == null) return;		
+		
+		int lifeValue;
+		
+		// Draw cells
+		for (int x = 0; x < gridWidth; x++) {
+			for (int y = 0; y < gridHeight; y++) {
+				lifeValue = lifeGrid[x][y];
+				
+				if(lifeValue == ALIVE)
+					canvas.drawRect(x*cellSize, y*cellSize, x*cellSize + cellSize, y*cellSize + cellSize, cellPaint);
+				else if(lifeValue > 0){
+					canvas.drawRect(x*cellSize, y*cellSize, x*cellSize + cellSize, y*cellSize + cellSize, fadePaint);
+				}
+			}
+		}
+
+		
+		// Draw grid
 		if(drawGrid) {
 			for (int x = 0; x < getWidth(); x+=cellSize) {
 				canvas.drawLine(x, 0, x, getHeight(), gridPaint);
@@ -91,8 +127,6 @@ public class LifeGridView extends View {
 		
 		gridWidth = (int)(Math.floor(w/cellSize));
 		gridHeight = (int)(Math.floor(h/cellSize));
-		
-		Log.d(TAG, "Width = " + gridWidth + ", Height = " + gridHeight);
 		
 		lifeGrid = new int[gridWidth][gridHeight];
 		newGrid();
@@ -137,53 +171,6 @@ public class LifeGridView extends View {
 			}
 		}
 	}
-	
-	
-	/*private void fillLifeGridShape() {
-		for (int x = 0; x < gridWidth; x++) {
-			for (int y = 0; y < gridHeight; y++) {
-					lifeGrid[x][y] = 0;
-			}
-		}
-		
-		
-		int xstart = gridWidth/2;
-		int ystart = 10;
-		
-		lifeGrid[xstart][ystart] = true;
-		lifeGrid[xstart][ystart + 1] = true;
-		lifeGrid[xstart][ystart + 2] = true;
-		lifeGrid[xstart][ystart + 3] = true;
-		lifeGrid[xstart][ystart + ] = true;
-		lifeGrid[xstart][ystart + 5] = true;
-		lifeGrid[xstart][ystart + 6] = true;
-		lifeGrid[xstart][ystart + 7] = true;
-		
-		lifeGrid[xstart][ystart + 9] = true;
-		lifeGrid[xstart][ystart + 10] = true;
-		lifeGrid[xstart][ystart + 11] = true;
-		lifeGrid[xstart][ystart + 12] = true;
-		lifeGrid[xstart][ystart + 13] = true;
-		
-		lifeGrid[xstart][ystart + 17] = true;
-		lifeGrid[xstart][ystart + 18] = true;
-		lifeGrid[xstart][ystart + 19] = true;
-		
-		lifeGrid[xstart][ystart + 26] = true;
-		lifeGrid[xstart][ystart + 27] = true;
-		lifeGrid[xstart][ystart + 28] = true;
-		lifeGrid[xstart][ystart + 29] = true;
-		lifeGrid[xstart][ystart + 30] = true;
-		lifeGrid[xstart][ystart + 31] = true;
-		lifeGrid[xstart][ystart + 32] = true;
-		
-		lifeGrid[xstart][ystart + 3] = true;
-		lifeGrid[xstart][ystart + 35] = true;
-		lifeGrid[xstart][ystart + 36] = true;
-		lifeGrid[xstart][ystart + 37] = true;
-		lifeGrid[xstart][ystart + 38] = true;
-		
-	}*/
 	
 	
 	private void updateLifeGrid() {		
@@ -259,11 +246,7 @@ public class LifeGridView extends View {
 
 	
 	private boolean getCellValue(int x, int y) {
-		
-		/*if(x < 0 || y < 0) 
-			return false;
-		else */
-			return (lifeGrid[x][y] == ALIVE);
+		return (lifeGrid[x][y] == ALIVE);
 	}
 
 
@@ -279,5 +262,96 @@ public class LifeGridView extends View {
 	}
 	
 	
+	public void clearGrid() {
+		boolean wasPlaying = false;
+		if(isPlaying) {
+			pauseGrid();
+			wasPlaying = true;
+		}
+		
+		for (int x = 0; x < gridWidth; x++) {
+			for (int y = 0; y < gridHeight; y++) {
+				lifeGrid[x][y] = DEAD;
+			}
+		}
+		
+		invalidate();
+		
+		if(wasPlaying) pauseGrid();
+	}
 	
+	
+	public void setCellByCoord(float prevX, float prevY, float newX, float newY) {
+		float[] pts = {prevX, prevY, newX, newY};
+		Matrix pointMatrix = new Matrix(matrix);
+		matrix.invert(pointMatrix);
+		pointMatrix.mapPoints(pts);
+		
+		prevX = pts[0];
+		prevY = pts[1];
+		newX = pts[2];
+		newY = pts[3];
+		
+		int prevGridX = (int)(Math.floor(prevX/cellSize));
+		int prevGridY = (int)(Math.floor((prevY/cellSize)+(5/scale)));
+		 
+		int gridX = (int)(Math.floor(newX/cellSize));
+		int gridY = (int)(Math.floor((newY/cellSize)+(5/scale)));
+		
+		int dx = Math.abs(gridX-prevGridX);
+		int dy = Math.abs(gridY-prevGridY);
+		
+		int sx, sy, e2;
+		
+		if (prevGridX < gridX) sx = 1;
+		else sx = -1;
+		
+		if (prevGridY < gridY) sy = 1;
+		else sy = -1;
+		
+		int err = dx-dy;
+		
+		while (!(prevGridX == gridX && prevGridY == gridY)) {
+			if (prevGridX >= gridWidth || prevGridY >= gridHeight ||
+					prevGridX < 0 || prevGridY < 0) break;
+			
+			lifeGrid[prevGridX][prevGridY] = ALIVE;
+		
+			e2 = 2*err;
+			
+			if (e2 > -dy) { 
+				err = err - dy;
+				prevGridX = prevGridX + sx;
+			}
+			
+			if (e2 <  dx) {
+				err = err + dx;
+				prevGridY = prevGridY + sy;
+			}
+		}
+		
+		if (!(gridX >= gridWidth || gridY >= gridHeight || gridX < 0 || gridY < 0))
+			lifeGrid[gridX][gridY] = ALIVE;
+
+		invalidate();
+	}
+	
+	
+	public void setSingleCellByCoord(float x, float y) {
+		float[] pts = {x, y};
+		Matrix pointMatrix = new Matrix(matrix);
+		matrix.invert(pointMatrix);
+		pointMatrix.mapPoints(pts);
+		
+		x = pts[0];
+		y = pts[1];
+		
+		int gridX = (int)(Math.floor(x/cellSize));
+		int gridY = (int)(Math.floor((y/cellSize)+(5/scale)));
+		
+		if (!(gridX >= gridWidth || gridY >= gridHeight || gridX < 0 || gridY < 0))
+			lifeGrid[gridX][gridY] = ALIVE;
+		
+		invalidate();
+	}
 }

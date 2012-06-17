@@ -42,6 +42,7 @@ public class LifeGridView extends View {
 	public int actionBarHeight = -1;
 	
 	float scale = 1f;
+	float totalScale = 1f;
 	
 	public float translateX = 0;
 	public float translateY = 0;
@@ -83,6 +84,10 @@ public class LifeGridView extends View {
 		canvas.setMatrix(matrix);
 		
 		super.onDraw(canvas);
+		
+		matrix.postScale(scale, scale);
+		totalScale *= scale;
+		scale = 1f;
 		
 		matrix.postTranslate(translateX, translateY);
 		translateX = 0;
@@ -293,10 +298,10 @@ public class LifeGridView extends View {
 		newY = pts[3];
 		
 		int prevGridX = (int)(Math.floor(prevX/cellSize));
-		int prevGridY = (int)(Math.floor((prevY/cellSize)+(5/scale)));
+		int prevGridY = (int)(Math.floor((prevY/cellSize)+(5/totalScale)));
 		 
 		int gridX = (int)(Math.floor(newX/cellSize));
-		int gridY = (int)(Math.floor((newY/cellSize)+(5/scale)));
+		int gridY = (int)(Math.floor((newY/cellSize)+(5/totalScale)));
 		
 		int dx = Math.abs(gridX-prevGridX);
 		int dy = Math.abs(gridY-prevGridY);
@@ -347,7 +352,7 @@ public class LifeGridView extends View {
 		y = pts[1];
 		
 		int gridX = (int)(Math.floor(x/cellSize));
-		int gridY = (int)(Math.floor((y/cellSize)+(5/scale)));
+		int gridY = (int)(Math.floor((y/cellSize)+(5/totalScale)));
 		
 		if (!(gridX >= gridWidth || gridY >= gridHeight || gridX < 0 || gridY < 0))
 			lifeGrid[gridX][gridY] = ALIVE;

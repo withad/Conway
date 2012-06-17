@@ -3,6 +3,8 @@ package uk.co.withad.conway;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MotionEvent;
+import android.view.ScaleGestureDetector;
+import android.view.ScaleGestureDetector.OnScaleGestureListener;
 import android.view.View;
 import android.view.View.OnTouchListener;
 
@@ -13,19 +15,19 @@ import com.actionbarsherlock.view.MenuItem;
 
 import static uk.co.withad.conway.Constants.*;
 
-public class ConwayActivity extends SherlockActivity implements OnTouchListener {
+public class ConwayActivity extends SherlockActivity implements OnTouchListener, OnScaleGestureListener {
 	
 	boolean playing = true;
 	LifeGridView gridView;
 	
-	/*float prevX = -1;
-	float prevY = -1;*/
 	float[] prevXs = new float[5];
 	float[] prevYs = new float[5];
 	
 	int maxFingers = 5;
 	
 	boolean paint = true;
+	
+	private ScaleGestureDetector scaleDetector;
 	
 	
     /** Called when the activity is first created. */
@@ -37,6 +39,8 @@ public class ConwayActivity extends SherlockActivity implements OnTouchListener 
         gridView = (LifeGridView)findViewById(R.id.lifegridview);
         gridView.setOnTouchListener(this);
         gridView.parentActivity = this;
+        
+        scaleDetector = new ScaleGestureDetector(this, this);
     }
     
     
@@ -86,6 +90,8 @@ public class ConwayActivity extends SherlockActivity implements OnTouchListener 
 
 	@Override
 	public boolean onTouch(View v, MotionEvent evt) {
+		if(!paint) scaleDetector.onTouchEvent(evt);
+		if(scaleDetector.isInProgress()) return true;
 		
 		int pointerCount = evt.getPointerCount();
 		
@@ -153,5 +159,28 @@ public class ConwayActivity extends SherlockActivity implements OnTouchListener 
 		}
 		
 		return true;
+	}
+
+
+	@Override
+	public boolean onScale(ScaleGestureDetector detector) {
+		//Log.d(TAG, "Scaling");
+		gridView.scale *= detector.getScaleFactor();
+		gridView.invalidate();
+		return true;
+	}
+
+
+	@Override
+	public boolean onScaleBegin(ScaleGestureDetector detector) {
+		// TODO Auto-generated method stub
+		return true;
+	}
+
+
+	@Override
+	public void onScaleEnd(ScaleGestureDetector detector) {
+		// TODO Auto-generated method stub
+		
 	}
 }

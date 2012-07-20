@@ -60,7 +60,6 @@ public class ConwayActivity extends SherlockActivity implements OnTouchListener,
     	
     	case R.id.reset:
     		gridView.newGrid();
-    		gridView.actionBarHeight = -1;
     		return true;
     		
     	case R.id.pause:

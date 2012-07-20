@@ -6,17 +6,19 @@ import static uk.co.withad.conway.Constants.TAG;
 
 import java.util.Random;
 
-import android.app.Activity;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Paint.Style;
+import android.graphics.Rect;
 import android.os.Handler;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
+
+import com.actionbarsherlock.view.Window;
 
 
 public class LifeGridView extends View {
@@ -38,7 +40,7 @@ public class LifeGridView extends View {
 	
 	Matrix matrix = null;
 	
-	public Activity parentActivity;
+	public ConwayActivity parentActivity;
 	public int actionBarHeight = -1;
 	
 	float scale = 1f;
@@ -75,10 +77,17 @@ public class LifeGridView extends View {
 	public void onDraw(Canvas canvas) {
 		if(matrix == null) matrix = canvas.getMatrix();
 		if (actionBarHeight == -1) {
-			actionBarHeight = parentActivity.getActionBar().getHeight();
-			matrix.reset();
-			matrix.postScale(scale, scale);
-			matrix.postTranslate(0, actionBarHeight);
+			actionBarHeight = parentActivity.getSupportActionBar().getHeight();
+			//matrix.reset();
+			//matrix.postScale(scale, scale);
+			/*Rect rect= new Rect();
+			Window window= parentActivity.getSupportWindow();
+			window.getDecorView().getWindowVisibleDisplayFrame(rect);
+			int statusBarHeight= rect.top;
+			int contentViewTop= 
+			    window.findViewById(Window.ID_ANDROID_CONTENT).getTop();
+			int titleBarHeight= contentViewTop - statusBarHeight;*/
+			matrix.postTranslate(0, (float) (actionBarHeight));
 		}
 		
 		canvas.setMatrix(matrix);

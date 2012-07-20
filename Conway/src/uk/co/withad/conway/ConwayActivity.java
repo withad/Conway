@@ -1,19 +1,18 @@
 package uk.co.withad.conway;
 
 import android.os.Bundle;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.ScaleGestureDetector.OnScaleGestureListener;
 import android.view.View;
 import android.view.View.OnTouchListener;
+import android.view.WindowManager;
 
 import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
-
-import static uk.co.withad.conway.Constants.*;
+import com.actionbarsherlock.view.Window;
 
 public class ConwayActivity extends SherlockActivity implements OnTouchListener, OnScaleGestureListener {
 	
@@ -34,11 +33,14 @@ public class ConwayActivity extends SherlockActivity implements OnTouchListener,
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        //requestWindowFeature(Window.FEATURE_NO_TITLE);
+		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.main);
         
         gridView = (LifeGridView)findViewById(R.id.lifegridview);
         gridView.setOnTouchListener(this);
         gridView.parentActivity = this;
+          
         
         scaleDetector = new ScaleGestureDetector(this, this);
     }

@@ -4,13 +4,6 @@
     android:layout_height="fill_parent"
     android:orientation="vertical" >
 	
-	<!-- <Button
-        android:id="@+id/updateButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Update"
-        /> -->
-	
     <uk.co.withad.conway.LifeGridView
         android:id="@+id/lifegridview"
         android:layout_width="fill_parent"

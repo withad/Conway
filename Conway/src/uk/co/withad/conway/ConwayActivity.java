@@ -12,7 +12,6 @@ import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
-import com.actionbarsherlock.view.Window;
 
 public class ConwayActivity extends SherlockActivity implements OnTouchListener, OnScaleGestureListener {
 	
@@ -33,19 +32,18 @@ public class ConwayActivity extends SherlockActivity implements OnTouchListener,
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //requestWindowFeature(Window.FEATURE_NO_TITLE);
 		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.main);
         
         gridView = (LifeGridView)findViewById(R.id.lifegridview);
         gridView.setOnTouchListener(this);
         gridView.parentActivity = this;
-          
         
         scaleDetector = new ScaleGestureDetector(this, this);
     }
     
     
+    /** Create ActionBar */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
     	MenuInflater inflater = getSupportMenuInflater();
@@ -55,6 +53,7 @@ public class ConwayActivity extends SherlockActivity implements OnTouchListener,
     }
     
     
+    /** Handle ActionBar options */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
     	switch(item.getItemId()) {
@@ -84,15 +83,16 @@ public class ConwayActivity extends SherlockActivity implements OnTouchListener,
     		paint = !paint;
     		return true;
     	}
-    		
     	
     	return super.onOptionsItemSelected(item);
     }
 
 
+    /** Handle touch input */
 	@Override
 	public boolean onTouch(View v, MotionEvent evt) {
 		if(!paint) scaleDetector.onTouchEvent(evt);
+		
 		if(scaleDetector.isInProgress()) return true;
 		
 		int pointerCount = evt.getPointerCount();
@@ -104,9 +104,9 @@ public class ConwayActivity extends SherlockActivity implements OnTouchListener,
 				prevXs[i] = evt.getX(i);
 				prevYs[i] = evt.getY(i);
 				
-				if(paint) {
+				// If in "paint" mode, paint the touched cell
+				if(paint)
 					gridView.setSingleCellByCoord(prevXs[i], prevYs[i]);
-				}
 			}
 			
 			break;
@@ -117,9 +117,9 @@ public class ConwayActivity extends SherlockActivity implements OnTouchListener,
 				prevXs[i] = evt.getX(i);
 				prevYs[i] = evt.getY(i);
 				
-				if(paint) {
+				// If in "paint" mode, paint the touched cell
+				if(paint) 
 					gridView.setSingleCellByCoord(prevXs[i], prevYs[i]);
-				}
 			}
 			break;
 			
@@ -137,16 +137,17 @@ public class ConwayActivity extends SherlockActivity implements OnTouchListener,
 			float newX = evt.getX();
 			float newY = evt.getY();
 			
+			// If in "paint" mode, fill in the cells dragged across
 			if(paint) {
 				for(int i = 0; i < evt.getPointerCount(); i++) {
 					newX = evt.getX(i);
 					newY = evt.getY(i);
-					gridView.setCellByCoord(prevXs[i], prevYs[i], newX, newY);
+					gridView.setCellsByCoord(prevXs[i], prevYs[i], newX, newY);
 					prevXs[i] = newX;
 					prevYs[i] = newY;
 				}
-				
 			}
+			// If in "move" mode, move the grid
 			else {
 				gridView.translateX += newX - prevXs[0];
 				gridView.translateY += newY - prevYs[0];
@@ -155,8 +156,6 @@ public class ConwayActivity extends SherlockActivity implements OnTouchListener,
 				prevYs[0] = newY;
 			}
 			
-			
-			
 			break;
 		}
 		
@@ -164,25 +163,25 @@ public class ConwayActivity extends SherlockActivity implements OnTouchListener,
 	}
 
 
+	/** Scale the grid proportional to pinch gesture, if 
+	 * in "movement" mode. Won't be triggered if in "paint". */
 	@Override
 	public boolean onScale(ScaleGestureDetector detector) {
-		//Log.d(TAG, "Scaling");
 		gridView.scale *= detector.getScaleFactor();
 		gridView.invalidate();
 		return true;
 	}
-
-
+	
+	
+	/** Required for the OnScaleGestureListener */
 	@Override
 	public boolean onScaleBegin(ScaleGestureDetector detector) {
-		// TODO Auto-generated method stub
 		return true;
 	}
 
-
+	
+	/** Required for the OnScaleGestureListener */
 	@Override
 	public void onScaleEnd(ScaleGestureDetector detector) {
-		// TODO Auto-generated method stub
-		
 	}
 }

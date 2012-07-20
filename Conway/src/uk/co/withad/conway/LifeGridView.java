@@ -2,7 +2,6 @@ package uk.co.withad.conway;
 
 import static uk.co.withad.conway.Constants.ALIVE;
 import static uk.co.withad.conway.Constants.DEAD;
-import static uk.co.withad.conway.Constants.TAG;
 
 import java.util.Random;
 
@@ -12,13 +11,9 @@ import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Paint.Style;
-import android.graphics.Rect;
 import android.os.Handler;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.View;
-
-import com.actionbarsherlock.view.Window;
 
 
 public class LifeGridView extends View {
@@ -54,59 +49,63 @@ public class LifeGridView extends View {
 	Paint gridPaint;
 	
 	
-	// Constructor
+	/** Constructor */
 	public LifeGridView(Context context, AttributeSet atts) {
 		super(context, atts);
 		
+		// Set cell colour
 		cellPaint = new Paint();
 		cellPaint.setStyle(Style.FILL);
 		cellPaint.setColor(Color.BLACK);
 		
+		// Set "just died" cell colour
 		fadePaint = new Paint();
 		fadePaint.setStyle(Style.FILL);
 		fadePaint.setColor(Color.GRAY);
 		
+		// Set colour of grid lines
 		gridPaint = new Paint();
 		gridPaint.setColor(Color.LTGRAY);
-		
+	
+		// Set background colour of the grid
 		setBackgroundColor(Color.WHITE);
 	}
 	
 	
+	/** Draw the screen, including the grid. */
 	@Override
 	public void onDraw(Canvas canvas) {
+		
+		// Get copy of the screen's matrix
 		if(matrix == null) matrix = canvas.getMatrix();
+		
+		// Translate grid to compensate of the ActionBar
 		if (actionBarHeight == -1) {
 			actionBarHeight = parentActivity.getSupportActionBar().getHeight();
-			//matrix.reset();
-			//matrix.postScale(scale, scale);
-			/*Rect rect= new Rect();
-			Window window= parentActivity.getSupportWindow();
-			window.getDecorView().getWindowVisibleDisplayFrame(rect);
-			int statusBarHeight= rect.top;
-			int contentViewTop= 
-			    window.findViewById(Window.ID_ANDROID_CONTENT).getTop();
-			int titleBarHeight= contentViewTop - statusBarHeight;*/
 			matrix.postTranslate(0, (float) (actionBarHeight));
 		}
 		
+		// Set matrix as the screen's matrix
 		canvas.setMatrix(matrix);
 		
 		super.onDraw(canvas);
 		
+		// Scale grid
 		matrix.postScale(scale, scale);
 		totalScale *= scale;
 		scale = 1f;
 		
+		// Move grid
 		matrix.postTranslate(translateX, translateY);
 		translateX = 0;
 		translateY = 0;
 		
-		if(lifeGrid == null) return;		
-		
-		int lifeValue;
+		// Skip if the grid array doesn't exist yet
+		if(lifeGrid == null) 
+			return;		
 		
 		// Draw cells
+		int lifeValue;
 		for (int x = 0; x < gridWidth; x++) {
 			for (int y = 0; y < gridHeight; y++) {
 				lifeValue = lifeGrid[x][y];
@@ -119,7 +118,6 @@ public class LifeGridView extends View {
 			}
 		}
 
-		
 		// Draw grid
 		if(drawGrid) {
 			for (int x = 0; x < getWidth(); x+=cellSize) {
@@ -133,6 +131,9 @@ public class LifeGridView extends View {
 	}
 	
 	
+	/** Triggered when screen size changes.
+	 * Used to update the height/width of the grid.
+	 */
 	@Override
 	protected void onSizeChanged(int w, int h, int oldw, int oldh) {
 		super.onSizeChanged(w, h, oldw, oldh);
@@ -142,28 +143,38 @@ public class LifeGridView extends View {
 		gridWidth = (int)(Math.floor(w/cellSize));
 		gridHeight = (int)(Math.floor(h/cellSize));
 		
-		lifeGrid = new int[gridWidth][gridHeight];
 		newGrid();
 	}
 	
 	
+	/** Creates a new grid array based on the current gridWeight, gridHeight */
 	public void newGrid() {
-		if(lifeGrid == null) return;
+		if(lifeGrid == null) 
+			lifeGrid = new int[gridWidth][gridHeight];
 		
+		// Can't allow the grid to update while refilling it
 		tickHandler.removeCallbacks(tick);
 		
-		fillLifeGrid();
-		//fillLifeGridShape();
+		// Randomly fill the grid, 50% chance of being alive for each cell
+		for (int x = 0; x < gridWidth; x++) {
+			for (int y = 0; y < gridHeight; y++) {
+				
+				if (random.nextBoolean())
+					lifeGrid[x][y] = ALIVE;
+				else
+					lifeGrid[x][y] = DEAD;
+			}
+		}
 		
-		if(isPlaying)
+		if(isPlaying) 
 			tickHandler.postDelayed(tick, tickTime);
 		
 		invalidate();
 	}
 
 
+	/** Runnable that updates the grid */
 	private Runnable tick = new Runnable() {
-		
 		public void run() {
 			updateLifeGrid();
 			tickHandler.postDelayed(tick, tickTime);
@@ -171,28 +182,15 @@ public class LifeGridView extends View {
 	};
 	
 	
-	private void fillLifeGrid() {		
-		int choice;
-		
-		for (int x = 0; x < gridWidth; x++) {
-			for (int y = 0; y < gridHeight; y++) {
-				choice = random.nextInt(2);
-				
-				if (choice == 1)
-					lifeGrid[x][y] = ALIVE;
-				else if (choice == 0)
-					lifeGrid[x][y] = DEAD;
-			}
-		}
-	}
-	
-	
+	/** Updates all the cells in the grid based on Conway's rules 
+	 * Fills a new array with updated cells from the current array then
+	 * sets the new array as the current array.*/
 	private void updateLifeGrid() {		
 		int[][] newGrid = new int[gridWidth][gridHeight];
 		
 		for (int x = 0; x < gridWidth; x++) {
 			for (int y = 0; y < gridHeight; y++) {
-				newGrid[x][y] = updateCell(x, y);
+				newGrid[x][y] = nextState(x, y);
 			}
 		}
 		
@@ -201,8 +199,10 @@ public class LifeGridView extends View {
 	}
 
 
-	private int updateCell(int x, int y) {
+	/** Returns the next state of single cell at coordinates (x,y) */
+	private int nextState(int x, int y) {
 		
+		// Figure out the surrounding rows/columns of a cell
 		int leftColumn = x-1;
 		int rightColumn = x+1;
 		int topRow = y-1;
@@ -219,9 +219,8 @@ public class LifeGridView extends View {
 			if(bottomRow >= gridHeight) bottomRow = -1;
 		}
 		
-		
-		boolean left, topLeft, top, topRight, right,
-			bottomRight, bottom, bottomLeft;
+		// See if the neighbours are alive or dead
+		boolean left, topLeft, top, topRight, right, bottomRight, bottom, bottomLeft;
 		
 		topLeft = getCellValue(leftColumn, topRow);	
 		left = getCellValue(leftColumn,y);
@@ -234,36 +233,38 @@ public class LifeGridView extends View {
 		right = getCellValue(rightColumn,y);
 		bottomRight = getCellValue(rightColumn,bottomRow);		
 		
+		// Count the living neighbours
 		boolean[] neighbours = {topLeft, left, bottomLeft, top, bottom, topRight, right, bottomRight};
-		
 		int noOfNeighbours = 0;
 		for (boolean b : neighbours) {
 			if(b) noOfNeighbours++;
 		}
 		
-		int currentLife = lifeGrid[x][y];
-		boolean currentlyAlive = (currentLife == ALIVE);
-		
+		// Calculate the cell's next state based on current state and number of neighbours
+		int nextLife = lifeGrid[x][y];
+		boolean currentlyAlive = (nextLife == ALIVE);
 		
 		if(currentlyAlive && (noOfNeighbours == 2 || noOfNeighbours == 3)) {
-			currentLife = ALIVE;
+			nextLife = ALIVE;
 		}
 		else if(!currentlyAlive && noOfNeighbours == 3) {
-			currentLife = ALIVE;
+			nextLife = ALIVE;
 		}
-		else if(currentLife != DEAD){
-			currentLife--;
+		else if(nextLife != DEAD){
+			nextLife--;
 		}
 		
-		return currentLife;
+		return nextLife;
 	}
 
 	
+	/** Returns true if a cell at (x,y) is alive */
 	private boolean getCellValue(int x, int y) {
 		return (lifeGrid[x][y] == ALIVE);
 	}
 
 
+	/** Pause the game */
 	public void pauseGrid() {
 		if(isPlaying) {
 			tickHandler.removeCallbacks(tick);
@@ -276,6 +277,7 @@ public class LifeGridView extends View {
 	}
 	
 	
+	/** Clear the grid (set all cells to dead) */
 	public void clearGrid() {
 		boolean wasPlaying = false;
 		if(isPlaying) {
@@ -295,7 +297,8 @@ public class LifeGridView extends View {
 	}
 	
 	
-	public void setCellByCoord(float prevX, float prevY, float newX, float newY) {
+	/** Set a line of cells between two screen coordinates to alive */
+	public void setCellsByCoord(float prevX, float prevY, float newX, float newY) {
 		float[] pts = {prevX, prevY, newX, newY};
 		Matrix pointMatrix = new Matrix(matrix);
 		matrix.invert(pointMatrix);
@@ -351,6 +354,7 @@ public class LifeGridView extends View {
 	}
 	
 	
+	/** Set a single cell to alive based on its screen coordinate */
 	public void setSingleCellByCoord(float x, float y) {
 		float[] pts = {x, y};
 		Matrix pointMatrix = new Matrix(matrix);

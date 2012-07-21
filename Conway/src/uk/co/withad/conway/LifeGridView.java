@@ -384,6 +384,5 @@ public class LifeGridView extends View {
 	public void reset() {
 		newGrid();
 		matrix = null;
-		//actionBarHeight = -1;
 	}
 }

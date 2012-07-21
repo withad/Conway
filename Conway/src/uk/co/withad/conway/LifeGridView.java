@@ -1,8 +1,9 @@
 package uk.co.withad.conway;
 
-import static uk.co.withad.conway.Constants.ALIVE;
+import static uk.co.withad.conway.Constants.*;
 import static uk.co.withad.conway.Constants.DEAD;
 
+import java.util.Calendar;
 import java.util.Random;
 
 import android.content.Context;
@@ -13,12 +14,14 @@ import android.graphics.Paint;
 import android.graphics.Paint.Style;
 import android.os.Handler;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 
 
 public class LifeGridView extends View {
 	
 	private int[][] lifeGrid = null;
+	private int[][] newGrid = null;
 	private Random random = new Random();
 	
 	private Handler tickHandler = new Handler();
@@ -27,8 +30,6 @@ public class LifeGridView extends View {
 	private boolean isPlaying = true;
 	private boolean wraparound = true;
 	private boolean drawGrid = true;
-	
-	private int cellSize = 10;
 	
 	private int gridWidth = 10;
 	private int gridHeight = 10;
@@ -48,6 +49,10 @@ public class LifeGridView extends View {
 	Paint fadePaint;
 	Paint gridPaint;
 	
+	// Configuration
+	private int cellSize = 7;
+	boolean fading = false;
+	
 	
 	/** Constructor */
 	public LifeGridView(Context context, AttributeSet atts) {
@@ -57,6 +62,7 @@ public class LifeGridView extends View {
 		cellPaint = new Paint();
 		cellPaint.setStyle(Style.FILL);
 		cellPaint.setColor(Color.BLACK);
+		//cellPaint.setARGB(255, 0, 0, 255);
 		
 		// Set "just died" cell colour
 		fadePaint = new Paint();
@@ -66,9 +72,11 @@ public class LifeGridView extends View {
 		// Set colour of grid lines
 		gridPaint = new Paint();
 		gridPaint.setColor(Color.LTGRAY);
+		//gridPaint.setColor(Color.BLACK);
 	
 		// Set background colour of the grid
 		setBackgroundColor(Color.WHITE);
+		//setBackgroundColor(Color.BLACK);
 	}
 	
 	
@@ -112,7 +120,7 @@ public class LifeGridView extends View {
 				
 				if(lifeValue == ALIVE)
 					canvas.drawRect(x*cellSize, y*cellSize, x*cellSize + cellSize, y*cellSize + cellSize, cellPaint);
-				else if(lifeValue > 0){
+				else if(lifeValue > 0 && fading){
 					canvas.drawRect(x*cellSize, y*cellSize, x*cellSize + cellSize, y*cellSize + cellSize, fadePaint);
 				}
 			}
@@ -185,8 +193,8 @@ public class LifeGridView extends View {
 	/** Updates all the cells in the grid based on Conway's rules 
 	 * Fills a new array with updated cells from the current array then
 	 * sets the new array as the current array.*/
-	private void updateLifeGrid() {		
-		int[][] newGrid = new int[gridWidth][gridHeight];
+	private void updateLifeGrid() {	
+		newGrid = new int[gridWidth][gridHeight];
 		
 		for (int x = 0; x < gridWidth; x++) {
 			for (int y = 0; y < gridHeight; y++) {
@@ -370,5 +378,12 @@ public class LifeGridView extends View {
 			lifeGrid[gridX][gridY] = ALIVE;
 		
 		invalidate();
+	}
+
+
+	public void reset() {
+		newGrid();
+		matrix = null;
+		//actionBarHeight = -1;
 	}
 }

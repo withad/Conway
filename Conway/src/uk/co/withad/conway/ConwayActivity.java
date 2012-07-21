@@ -59,16 +59,20 @@ public class ConwayActivity extends SherlockActivity implements OnTouchListener,
     	switch(item.getItemId()) {
     	
     	case R.id.reset:
-    		gridView.newGrid();
+    		gridView.reset();
     		return true;
     		
     	case R.id.pause:
     		gridView.pauseGrid();
     		
-    		if(playing)
+    		if(playing) {
     			item.setTitle("Play");
-    		else
+    			item.setIcon(R.drawable.ic_media_play);
+    		}
+    		else {
     			item.setTitle("Pause");
+    			item.setIcon(R.drawable.ic_media_pause);
+    		}
     		
     		playing = !playing;
     			

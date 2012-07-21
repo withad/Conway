@@ -264,7 +264,7 @@ public class LifeGridView extends View {
 	}
 
 
-	/** Pause the game */
+	/** Pause/unpause the game */
 	public void pauseGrid() {
 		if(isPlaying) {
 			tickHandler.removeCallbacks(tick);
@@ -279,11 +279,9 @@ public class LifeGridView extends View {
 	
 	/** Clear the grid (set all cells to dead) */
 	public void clearGrid() {
-		boolean wasPlaying = false;
-		if(isPlaying) {
-			pauseGrid();
-			wasPlaying = true;
-		}
+		
+		// Can't let grid update while clearing it
+		tickHandler.removeCallbacks(tick);
 		
 		for (int x = 0; x < gridWidth; x++) {
 			for (int y = 0; y < gridHeight; y++) {
@@ -293,7 +291,8 @@ public class LifeGridView extends View {
 		
 		invalidate();
 		
-		if(wasPlaying) pauseGrid();
+		if(isPlaying) 
+			tickHandler.postDelayed(tick, tickTime);
 	}
 	
 	

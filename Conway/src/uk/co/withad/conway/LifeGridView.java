@@ -50,7 +50,7 @@ public class LifeGridView extends View {
 	Paint gridPaint;
 	
 	// Configuration
-	private int cellSize = 20;
+	private int cellSize = 7;
 	boolean fading = false;
 	
 	boolean touching = false;

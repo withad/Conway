@@ -316,8 +316,8 @@ public class LifeGridView extends View {
 	public void setCellsByCoord(float prevX, float prevY, float newX, float newY) {
 		
 		// Don't update
-		//tickHandler.removeCallbacks(tick);
-		touching = true;
+		tickHandler.removeCallbacks(tick);
+		//touching = true;
 		
 		Log.d(TAG, "Setting cell by coords");
 		
@@ -374,10 +374,10 @@ public class LifeGridView extends View {
 
 		// Now you can update
 		if(isPlaying) {
-			//tickHandler.postDelayed(tick, tickTime);
+			tickHandler.postDelayed(tick, tickTime);
 			
-			updateLifeGrid();
-			touching = false;
+			//updateLifeGrid();
+			//touching = false;
 		}
 			
 		

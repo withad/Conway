@@ -25,7 +25,7 @@ public class LifeGridView extends View {
 	private Random random = new Random();
 	
 	private Handler tickHandler = new Handler();
-	private final int tickTime = 20;
+	private final int tickTime = 50;
 	
 	private boolean isPlaying = true;
 	private boolean wraparound = true;
@@ -50,8 +50,10 @@ public class LifeGridView extends View {
 	Paint gridPaint;
 	
 	// Configuration
-	private int cellSize = 7;
+	private int cellSize = 20;
 	boolean fading = false;
+	
+	boolean touching = false;
 	
 	
 	/** Constructor */
@@ -162,6 +164,7 @@ public class LifeGridView extends View {
 		
 		// Can't allow the grid to update while refilling it
 		tickHandler.removeCallbacks(tick);
+		//touching = true;
 		
 		// Randomly fill the grid, 50% chance of being alive for each cell
 		for (int x = 0; x < gridWidth; x++) {
@@ -184,7 +187,7 @@ public class LifeGridView extends View {
 	/** Runnable that updates the grid */
 	private Runnable tick = new Runnable() {
 		public void run() {
-			updateLifeGrid();
+			if(!touching) updateLifeGrid();
 			tickHandler.postDelayed(tick, tickTime);
 		}
 	};
@@ -202,7 +205,11 @@ public class LifeGridView extends View {
 			}
 		}
 		
-		lifeGrid = newGrid;
+		for (int x = 0; x < gridWidth; x++) {
+			for (int y = 0; y < gridHeight; y++) {
+				lifeGrid[x][y] = newGrid[x][y];
+			}
+		}
 		invalidate();
 	}
 
@@ -273,12 +280,13 @@ public class LifeGridView extends View {
 
 
 	/** Pause/unpause the game */
-	public void pauseGrid() {
+	public  void pauseGrid() {
 		if(isPlaying) {
 			tickHandler.removeCallbacks(tick);
 			isPlaying = false;
 		}
 		else {
+			//TODO: Update here?
 			tickHandler.postDelayed(tick, tickTime);
 			isPlaying = true;
 		}
@@ -306,6 +314,13 @@ public class LifeGridView extends View {
 	
 	/** Set a line of cells between two screen coordinates to alive */
 	public void setCellsByCoord(float prevX, float prevY, float newX, float newY) {
+		
+		// Don't update
+		//tickHandler.removeCallbacks(tick);
+		touching = true;
+		
+		Log.d(TAG, "Setting cell by coords");
+		
 		float[] pts = {prevX, prevY, newX, newY};
 		Matrix pointMatrix = new Matrix(matrix);
 		matrix.invert(pointMatrix);
@@ -357,12 +372,23 @@ public class LifeGridView extends View {
 		if (!(gridX >= gridWidth || gridY >= gridHeight || gridX < 0 || gridY < 0))
 			lifeGrid[gridX][gridY] = ALIVE;
 
+		// Now you can update
+		if(isPlaying) {
+			//tickHandler.postDelayed(tick, tickTime);
+			
+			updateLifeGrid();
+			touching = false;
+		}
+			
+		
 		invalidate();
 	}
 	
 	
 	/** Set a single cell to alive based on its screen coordinate */
 	public void setSingleCellByCoord(float x, float y) {
+		tickHandler.removeCallbacks(tick);
+		
 		float[] pts = {x, y};
 		Matrix pointMatrix = new Matrix(matrix);
 		matrix.invert(pointMatrix);
@@ -376,6 +402,9 @@ public class LifeGridView extends View {
 		
 		if (!(gridX >= gridWidth || gridY >= gridHeight || gridX < 0 || gridY < 0))
 			lifeGrid[gridX][gridY] = ALIVE;
+		
+		if(isPlaying) 
+			tickHandler.postDelayed(tick, tickTime);
 		
 		invalidate();
 	}

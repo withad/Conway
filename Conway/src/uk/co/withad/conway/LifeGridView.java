@@ -50,7 +50,7 @@ public class LifeGridView extends View {
 	Paint gridPaint;
 	
 	// Configuration
-	private int cellSize = 7;
+	private int cellSize = 20;
 	boolean fading = false;
 	
 	boolean touching = false;
@@ -64,7 +64,6 @@ public class LifeGridView extends View {
 		cellPaint = new Paint();
 		cellPaint.setStyle(Style.FILL);
 		cellPaint.setColor(Color.BLACK);
-		//cellPaint.setARGB(255, 0, 0, 255);
 		
 		// Set "just died" cell colour
 		fadePaint = new Paint();
@@ -74,11 +73,9 @@ public class LifeGridView extends View {
 		// Set colour of grid lines
 		gridPaint = new Paint();
 		gridPaint.setColor(Color.LTGRAY);
-		//gridPaint.setColor(Color.BLACK);
 	
 		// Set background colour of the grid
 		setBackgroundColor(Color.WHITE);
-		//setBackgroundColor(Color.BLACK);
 	}
 	
 	
@@ -332,10 +329,10 @@ public class LifeGridView extends View {
 		newY = pts[3];
 		
 		int prevGridX = (int)(Math.floor(prevX/cellSize));
-		int prevGridY = (int)(Math.floor((prevY/cellSize)+(5/totalScale)));
+		int prevGridY = (int)(Math.floor((prevY/cellSize)+getYOffset()));
 		 
 		int gridX = (int)(Math.floor(newX/cellSize));
-		int gridY = (int)(Math.floor((newY/cellSize)+(5/totalScale)));
+		int gridY = (int)(Math.floor((newY/cellSize)+getYOffset()));
 		
 		int dx = Math.abs(gridX-prevGridX);
 		int dy = Math.abs(gridY-prevGridY);
@@ -398,7 +395,7 @@ public class LifeGridView extends View {
 		y = pts[1];
 		
 		int gridX = (int)(Math.floor(x/cellSize));
-		int gridY = (int)(Math.floor((y/cellSize)+(5/totalScale)));
+		int gridY = (int)(Math.floor((y/cellSize)+getYOffset()));
 		
 		if (!(gridX >= gridWidth || gridY >= gridHeight || gridX < 0 || gridY < 0))
 			lifeGrid[gridX][gridY] = ALIVE;
@@ -408,9 +405,16 @@ public class LifeGridView extends View {
 		
 		invalidate();
 	}
+	
+	
+	float getYOffset() {
+		//return totalScale/cellSize;
+		return (actionBarHeight/cellSize) / totalScale;
+	}
 
 
 	public void reset() {
+		actionBarHeight = -1;
 		newGrid();
 		matrix = null;
 	}

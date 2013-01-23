@@ -3,7 +3,8 @@
     <item android:id="@+id/reset" android:title="Reset" android:showAsAction="always"></item>
     <item android:id="@+id/pause" android:title="Pause" android:showAsAction="always|withText" android:icon="@drawable/ic_media_pause"></item>
     <item android:id="@+id/clear" android:title="Clear" android:visible="true" android:showAsAction="always"></item>
-    <item android:id="@+id/paintOrMove" android:title="Paint" android:showAsAction="always"></item>
+    <item android:id="@+id/paintOrMove" android:title="Paint" android:showAsAction="always" android:visible="false"></item>
+    <item android:id="@+id/settings" android:title="Settings"></item>
     
 
 </menu>

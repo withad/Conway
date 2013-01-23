@@ -1,6 +1,10 @@
 package uk.co.withad.conway;
 
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.ScaleGestureDetector.OnScaleGestureListener;
@@ -13,7 +17,7 @@ import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
 
-public class ConwayActivity extends SherlockActivity implements OnTouchListener, OnScaleGestureListener {
+public class ConwayActivity extends SherlockActivity implements OnTouchListener, OnScaleGestureListener, OnSharedPreferenceChangeListener {
 	
 	boolean playing = true;
 	LifeGridView gridView;
@@ -26,6 +30,8 @@ public class ConwayActivity extends SherlockActivity implements OnTouchListener,
 	boolean paint = true;
 	
 	private ScaleGestureDetector scaleDetector;
+	
+	MenuItem playPause;
 	
 	
     /** Called when the activity is first created. */
@@ -43,11 +49,22 @@ public class ConwayActivity extends SherlockActivity implements OnTouchListener,
     }
     
     
+    @Override
+    protected void onResume() {
+ 	   super.onResume();
+ 	   
+ 	   SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+ 	   prefs.registerOnSharedPreferenceChangeListener(this);
+    }
+    
+    
     /** Create ActionBar */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
     	MenuInflater inflater = getSupportMenuInflater();
     	inflater.inflate(R.menu.mainmenu, menu);
+    	
+    	playPause = menu.findItem(R.id.pause);
 
 		return super.onCreateOptionsMenu(menu);
     }
@@ -84,6 +101,18 @@ public class ConwayActivity extends SherlockActivity implements OnTouchListener,
     		
     	case R.id.paintOrMove:
     		paint = !paint;
+    		return true;
+    		
+    	case R.id.settings:
+    		
+    		if(playing)
+    			gridView.pauseGrid();
+    		
+    		playing = false;
+    		playPause.setTitle("Play");
+    		playPause.setIcon(R.drawable.ic_media_play);
+    		
+    		startActivity(new Intent(this, Prefs.class));
     		return true;
     	}
     	
@@ -190,5 +219,15 @@ public class ConwayActivity extends SherlockActivity implements OnTouchListener,
 	/** Required for the OnScaleGestureListener */
 	@Override
 	public void onScaleEnd(ScaleGestureDetector detector) {
+	}
+
+
+	
+	
+	@Override
+	public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
+		if (gridView != null && !key.equals(Constants.ghostingKey))
+			gridView.reset();
+		
 	}
 }

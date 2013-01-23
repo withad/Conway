@@ -7,12 +7,14 @@ import java.util.Calendar;
 import java.util.Random;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Paint.Style;
 import android.os.Handler;
+import android.preference.PreferenceManager;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
@@ -25,7 +27,7 @@ public class LifeGridView extends View {
 	private Random random = new Random();
 	
 	private Handler tickHandler = new Handler();
-	private final int tickTime = 50;
+	private int tickTime;
 	
 	public boolean isPlaying = true;
 	private boolean wraparound = true;
@@ -50,15 +52,24 @@ public class LifeGridView extends View {
 	Paint gridPaint;
 	
 	// Configuration
-	private int cellSize = 20;
-	boolean fading = false;
+	private int cellSize;
 	
 	boolean touching = false;
+	
+	private Context context;
+	SharedPreferences prefs;
 	
 	
 	/** Constructor */
 	public LifeGridView(Context context, AttributeSet atts) {
 		super(context, atts);
+		
+		this.context = context;
+		prefs = PreferenceManager.getDefaultSharedPreferences(context.getApplicationContext());
+		
+		cellSize = Prefs.getCellSize(getContext());
+		tickTime = Prefs.getTickTime(getContext());
+		
 		
 		// Set cell colour
 		cellPaint = new Paint();
@@ -117,9 +128,11 @@ public class LifeGridView extends View {
 			for (int y = 0; y < gridHeight; y++) {
 				lifeValue = lifeGrid[x][y];
 				
+				cellSize = Prefs.getCellSize(getContext());
+				
 				if(lifeValue == ALIVE)
 					canvas.drawRect(x*cellSize, y*cellSize, x*cellSize + cellSize, y*cellSize + cellSize, cellPaint);
-				else if(lifeValue > 0 && fading){
+				else if(lifeValue > 0 && Prefs.getGhosting(getContext())){
 					canvas.drawRect(x*cellSize, y*cellSize, x*cellSize + cellSize, y*cellSize + cellSize, fadePaint);
 				}
 			}
@@ -147,8 +160,9 @@ public class LifeGridView extends View {
 		
 		tickHandler.removeCallbacks(tick);
 		
-		gridWidth = (int)(Math.floor(w/cellSize));
-		gridHeight = (int)(Math.floor(h/cellSize));
+		cellSize = Prefs.getCellSize(getContext());
+		
+		
 		
 		newGrid();
 	}
@@ -156,8 +170,11 @@ public class LifeGridView extends View {
 	
 	/** Creates a new grid array based on the current gridWeight, gridHeight */
 	public void newGrid() {
-		if(lifeGrid == null) 
-			lifeGrid = new int[gridWidth][gridHeight];
+		cellSize = Prefs.getCellSize(getContext());
+		gridWidth = (int)(Math.floor(getWidth()/cellSize));
+		gridHeight = (int)(Math.floor(getHeight()/cellSize));
+ 
+		lifeGrid = new int[gridWidth][gridHeight];
 		
 		// Can't allow the grid to update while refilling it
 		tickHandler.removeCallbacks(tick);
@@ -174,8 +191,10 @@ public class LifeGridView extends View {
 			}
 		}
 		
-		if(isPlaying) 
+		if(isPlaying) {
+			tickTime = Prefs.getTickTime(getContext());
 			tickHandler.postDelayed(tick, tickTime);
+		}
 		
 		invalidate();
 	}
@@ -284,6 +303,7 @@ public class LifeGridView extends View {
 		}
 		else {
 			//TODO: Update here?
+			tickTime = Prefs.getTickTime(getContext());
 			tickHandler.postDelayed(tick, tickTime);
 			isPlaying = true;
 		}
@@ -304,8 +324,10 @@ public class LifeGridView extends View {
 		
 		invalidate();
 		
-		if(isPlaying) 
+		if(isPlaying) {
+			tickTime = Prefs.getTickTime(getContext());
 			tickHandler.postDelayed(tick, tickTime);
+		}
 	}
 	
 	
@@ -327,6 +349,8 @@ public class LifeGridView extends View {
 		prevY = pts[1];
 		newX = pts[2];
 		newY = pts[3];
+		
+		cellSize = Prefs.getCellSize(getContext());
 		
 		int prevGridX = (int)(Math.floor(prevX/cellSize));
 		int prevGridY = (int)(Math.floor((prevY/cellSize)+getYOffset()));
@@ -371,6 +395,7 @@ public class LifeGridView extends View {
 
 		// Now you can update
 		if(isPlaying) {
+			tickTime = Prefs.getTickTime(getContext());
 			tickHandler.postDelayed(tick, tickTime);
 			
 			//updateLifeGrid();
@@ -394,20 +419,25 @@ public class LifeGridView extends View {
 		x = pts[0];
 		y = pts[1];
 		
+		cellSize = Prefs.getCellSize(getContext());
+		
 		int gridX = (int)(Math.floor(x/cellSize));
 		int gridY = (int)(Math.floor((y/cellSize)+getYOffset()));
 		
 		if (!(gridX >= gridWidth || gridY >= gridHeight || gridX < 0 || gridY < 0))
 			lifeGrid[gridX][gridY] = ALIVE;
 		
-		if(isPlaying) 
+		if(isPlaying) {
+			tickTime = Prefs.getTickTime(getContext());
 			tickHandler.postDelayed(tick, tickTime);
+		}
 		
 		invalidate();
 	}
 	
 	
 	float getYOffset() {
+		cellSize = Prefs.getCellSize(getContext());
 		return (actionBarHeight/cellSize) / totalScale;
 	}
 

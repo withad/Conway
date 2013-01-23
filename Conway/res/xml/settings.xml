@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen
+   xmlns:android="http://schemas.android.com/apk/res/android">
+   <PreferenceCategory android:title="Rendering">
+	<ListPreference
+	      android:key="CELL_SIZE"
+	      android:title="Change cell size"
+	      android:entries="@array/cellSizes"
+	      android:entryValues="@array/cellSizes"/>
+	      
+	<ListPreference
+	      android:key="SPEED"
+	      android:title="Change speed"
+	      android:entries="@array/tickTimes"
+	      android:entryValues="@array/tickTimes"/>
+	<CheckBoxPreference 
+	    android:title="Ghosting" 
+	    android:key="GHOSTING"
+	    android:defaultValue="false"/>
+   </PreferenceCategory>
+      
+</PreferenceScreen>

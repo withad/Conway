@@ -100,66 +100,70 @@ public class ConwayActivity extends SherlockActivity implements OnTouchListener,
 		
 		int pointerCount = evt.getPointerCount();
 		
-		switch (evt.getAction() & MotionEvent.ACTION_MASK) {
+		if(!gridView.isPlaying) {
 		
-		case MotionEvent.ACTION_DOWN:
-			for (int i = 0; i < pointerCount; i++) {
-				prevXs[i] = evt.getX(i);
-				prevYs[i] = evt.getY(i);
-				
-				// If in "paint" mode, paint the touched cell
-				if(paint)
-					gridView.setSingleCellByCoord(prevXs[i], prevYs[i]);
-			}
-			
-			break;
-			
-		case MotionEvent.ACTION_POINTER_DOWN:
-			
-			for (int i = 0; i < pointerCount; i++) {
-				prevXs[i] = evt.getX(i);
-				prevYs[i] = evt.getY(i);
-				
-				// If in "paint" mode, paint the touched cell
-				if(paint) 
-					gridView.setSingleCellByCoord(prevXs[i], prevYs[i]);
-			}
-			break;
-			
-			
-		case MotionEvent.ACTION_POINTER_UP:
-			int pointer = evt.getActionIndex();
-			for (int i = pointer; i < prevXs.length-1; i++) {
-				prevXs[i] = prevXs[i+1];
-				prevYs[i] = prevYs[i+1];
-			}
-			break;
-			
+			switch (evt.getAction() & MotionEvent.ACTION_MASK) {
 		
-		case MotionEvent.ACTION_MOVE:
-			float newX = evt.getX();
-			float newY = evt.getY();
-			
-			// If in "paint" mode, fill in the cells dragged across
-			if(paint) {
-				for(int i = 0; i < evt.getPointerCount(); i++) {
-					newX = evt.getX(i);
-					newY = evt.getY(i);
-					gridView.setCellsByCoord(prevXs[i], prevYs[i], newX, newY);
-					prevXs[i] = newX;
-					prevYs[i] = newY;
+			case MotionEvent.ACTION_DOWN:
+				for (int i = 0; i < pointerCount; i++) {
+					prevXs[i] = evt.getX(i);
+					prevYs[i] = evt.getY(i);
+					
+					// If in "paint" mode, paint the touched cell
+					if(paint)
+						gridView.setSingleCellByCoord(prevXs[i], prevYs[i]);
 				}
-			}
-			// If in "move" mode, move the grid
-			else {
-				gridView.translateX += newX - prevXs[0];
-				gridView.translateY += newY - prevYs[0];
-				gridView.invalidate();
-				prevXs[0] = newX;
-				prevYs[0] = newY;
-			}
+				
+				break;
+				
+			case MotionEvent.ACTION_POINTER_DOWN:
+				
+				for (int i = 0; i < pointerCount; i++) {
+					prevXs[i] = evt.getX(i);
+					prevYs[i] = evt.getY(i);
+					
+					// If in "paint" mode, paint the touched cell
+					if(paint) 
+						gridView.setSingleCellByCoord(prevXs[i], prevYs[i]);
+				}
+				break;
+				
+				
+			case MotionEvent.ACTION_POINTER_UP:
+				int pointer = evt.getActionIndex();
+				for (int i = pointer; i < prevXs.length-1; i++) {
+					prevXs[i] = prevXs[i+1];
+					prevYs[i] = prevYs[i+1];
+				}
+				break;
+				
 			
-			break;
+			case MotionEvent.ACTION_MOVE:
+				float newX = evt.getX();
+				float newY = evt.getY();
+				
+				// If in "paint" mode, fill in the cells dragged across
+				if(paint) {
+					for(int i = 0; i < evt.getPointerCount(); i++) {
+						newX = evt.getX(i);
+						newY = evt.getY(i);
+						gridView.setCellsByCoord(prevXs[i], prevYs[i], newX, newY);
+						prevXs[i] = newX;
+						prevYs[i] = newY;
+					}
+				}
+				// If in "move" mode, move the grid
+				else {
+					gridView.translateX += newX - prevXs[0];
+					gridView.translateY += newY - prevYs[0];
+					gridView.invalidate();
+					prevXs[0] = newX;
+					prevYs[0] = newY;
+				}
+				
+				break;
+			}
+		
 		}
 		
 		return true;

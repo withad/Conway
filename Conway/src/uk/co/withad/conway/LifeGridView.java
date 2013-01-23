@@ -27,7 +27,7 @@ public class LifeGridView extends View {
 	private Handler tickHandler = new Handler();
 	private final int tickTime = 50;
 	
-	private boolean isPlaying = true;
+	public boolean isPlaying = true;
 	private boolean wraparound = true;
 	private boolean drawGrid = true;
 	
@@ -408,7 +408,6 @@ public class LifeGridView extends View {
 	
 	
 	float getYOffset() {
-		//return totalScale/cellSize;
 		return (actionBarHeight/cellSize) / totalScale;
 	}
 
